@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    cors: {
+      origin: "https://vidfaq.com",
+      credentials: true,
+    },
   },
   plugins: [
     react(),
