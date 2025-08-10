@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => ({
       origin: ["https://vidfaq.com", "http://vidfaq.com"],
       credentials: true,
     },
+    allowedHosts: ["vidfaq.com"],
   },
   plugins: [
     react(),
