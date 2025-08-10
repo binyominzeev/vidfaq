@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8081,
     cors: {
-      origin: "https://vidfaq.com",
+      origin: ["https://vidfaq.com", "http://vidfaq.com"],
       credentials: true,
     },
   },
