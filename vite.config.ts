@@ -9,10 +9,20 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8081,
     cors: {
-      origin: ["https://vidfaq.com", "http://vidfaq.com"],
+      origin: (origin, callback) => {
+        try {
+          if (!origin || /([a-zA-Z0-9-]+\.)*vidfaq\.com$/.test(new URL(origin).hostname)) {
+            callback(null, true);
+          } else {
+            callback(new Error("Not allowed by CORS"), false);
+          }
+        } catch {
+          callback(new Error("Not allowed by CORS"), false);
+        }
+      },
       credentials: true,
     },
-    allowedHosts: ["vidfaq.com"],
+    allowedHosts: [".vidfaq.com"],
   },
   plugins: [
     react(),
