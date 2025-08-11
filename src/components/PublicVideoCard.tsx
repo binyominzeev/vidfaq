@@ -23,7 +23,7 @@ const PublicVideoCard: React.FC<PublicVideoCardProps> = ({ video }) => {
           src={video.thumbnail_url}
           alt={video.title}
           className="w-full h-48 object-cover"
-          style={{ width: '50%', height: '100%' }}
+          style={{ width: '50%', height: '80%' }}
         />
       )}
       <div className="p-4">
