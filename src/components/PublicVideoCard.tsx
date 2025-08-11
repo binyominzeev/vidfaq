@@ -24,7 +24,7 @@ const PublicVideoCard: React.FC<PublicVideoCardProps> = ({ video }) => {
             src={video.thumbnail_url}
             alt={video.title}
             className="object-contain"
-            style={{ width: '50%', height: '50%' }}
+            style={{ width: '50%', height: '100%' }}
           />
         ) : (
           <span className="text-muted-foreground">No thumbnail</span>
