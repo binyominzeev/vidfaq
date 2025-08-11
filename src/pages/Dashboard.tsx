@@ -7,6 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, LogOut, Settings, ExternalLink } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import VideoManager from '@/components/VideoManager';
+import { 
+  Video, 
+  Home, 
+  User as UserIcon,
+  Menu,
+  X,
+  Crown
+} from "lucide-react";
 
 interface Profile {
   id: string;
@@ -26,6 +34,38 @@ interface Subscription {
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [subdomainInput, setSubdomainInput] = useState<string>("");
+  const [subdomainSaving, setSubdomainSaving] = useState<boolean>(false);
+
+  const handleSubdomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSubdomainInput(e.target.value);
+  };
+
+  const handleSubdomainSave = async () => {
+    if (!user || !subdomainInput) return;
+    setSubdomainSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ subdomain: subdomainInput })
+        .eq('user_id', user.id);
+      if (error) throw error;
+      setProfile(prev => prev ? { ...prev, subdomain: subdomainInput } : prev);
+      toast({
+        title: 'Subdomain updated!',
+        description: `Your site is now available at https://${subdomainInput}.vidfaq.com`,
+        variant: 'default',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error updating subdomain',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubdomainSaving(false);
+    }
+  };
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +85,37 @@ const Dashboard = () => {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+  setProfile(data);
+  setSubdomainInput(data?.subdomain || "");
+  const handleSubdomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSubdomainInput(e.target.value);
+  };
+
+  const handleSubdomainSave = async () => {
+    if (!user || !subdomainInput) return;
+    setSubdomainSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ subdomain: subdomainInput })
+        .eq('user_id', user.id);
+      if (error) throw error;
+      setProfile(prev => prev ? { ...prev, subdomain: subdomainInput } : prev);
+      toast({
+        title: 'Subdomain updated!',
+        description: `Your site is now available at https://${subdomainInput}.vidfaq.com`,
+        variant: 'default',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error updating subdomain',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubdomainSaving(false);
+    }
+  };
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({
@@ -88,7 +158,12 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold">VidFAQ</h1>
+              <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Video className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                VidFAQ
+              </span>
               {profile?.subdomain && (
                 <Button variant="outline" size="sm" asChild>
                   <a
@@ -136,12 +211,27 @@ const Dashboard = () => {
               <CardTitle className="text-sm font-medium">Your Subdomain</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {profile?.subdomain || 'Not set'}
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={subdomainInput}
+                  onChange={handleSubdomainChange}
+                  className="border rounded px-3 py-2 text-lg font-bold"
+                  placeholder="Enter subdomain"
+                  disabled={subdomainSaving}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSubdomainSave}
+                  disabled={subdomainSaving || !subdomainInput}
+                  className="w-fit"
+                >
+                  {subdomainSaving ? "Saving..." : "Update"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  {subdomainInput ? `${subdomainInput}.vidfaq.com` : 'Configure your subdomain'}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {profile?.subdomain ? `${profile.subdomain}.vidfaq.com` : 'Configure your subdomain'}
-              </p>
             </CardContent>
           </Card>
           

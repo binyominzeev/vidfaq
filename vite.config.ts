@@ -11,7 +11,8 @@ export default defineConfig(({ mode }) => ({
     cors: {
       origin: (origin, callback) => {
         try {
-          if (!origin || /([a-zA-Z0-9-]+\.)*vidfaq\.com$/.test(new URL(origin).hostname)) {
+          const hostname = origin ? new URL(origin).hostname : '';
+          if (!origin || /([a-zA-Z0-9-]+\.)*vidfaq\.com$/.test(hostname) || hostname === 'localhost' || hostname === '127.0.0.1') {
             callback(null, true);
           } else {
             callback(new Error("Not allowed by CORS"), false);
@@ -22,7 +23,7 @@ export default defineConfig(({ mode }) => ({
       },
       credentials: true,
     },
-    allowedHosts: [".vidfaq.com"],
+    allowedHosts: [".vidfaq.com", "localhost"],
   },
   plugins: [
     react(),
