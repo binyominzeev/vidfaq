@@ -24,6 +24,19 @@ function getSubdomain() {
 const App = () => {
   const subdomain = getSubdomain();
   if (subdomain) {
+    // Get the path after the subdomain
+    const path = window.location.pathname;
+    // If path is "/" or empty, show profile
+    if (path === "/" || path === "") {
+      return <PublicProfile />;
+    }
+    // If path is "/[slug]", show video view
+    const slugMatch = path.match(/^\/(.+)$/);
+    if (slugMatch) {
+      // Pass slug as prop
+      return <PublicVideoView slug={slugMatch[1]} />;
+    }
+    // Fallback to profile
     return <PublicProfile />;
   }
   return (

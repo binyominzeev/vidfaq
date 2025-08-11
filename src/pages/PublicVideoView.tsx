@@ -13,24 +13,29 @@ interface Video {
   is_active: boolean;
 }
 
-const PublicVideoView = () => {
-  const { slug } = useParams<{ slug: string }>();
+interface PublicVideoViewProps {
+  slug?: string;
+}
+
+const PublicVideoView = ({ slug }: PublicVideoViewProps) => {
+  const params = useParams<{ slug: string }>();
+  const videoSlug = slug ?? params.slug;
   const [video, setVideo] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!slug) return;
+    if (!videoSlug) return;
     supabase
       .from("videos")
       .select("*")
-      .eq("video_slug", slug)
+      .eq("video_slug", videoSlug)
       .eq("is_active", true)
       .single()
       .then(({ data }) => {
         setVideo(data);
         setLoading(false);
       });
-  }, [slug]);
+  }, [videoSlug]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
