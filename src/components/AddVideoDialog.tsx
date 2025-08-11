@@ -31,13 +31,19 @@ const AddVideoDialog = ({
   const [loading, setLoading] = useState(false);
 
   const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
+    // Replace Hungarian accents
+    const accentMap: Record<string, string> = {
+      'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ö': 'o', 'ő': 'o', 'ú': 'u', 'ü': 'u', 'ű': 'u',
+      'Á': 'a', 'É': 'e', 'Í': 'i', 'Ó': 'o', 'Ö': 'o', 'Ő': 'o', 'Ú': 'u', 'Ü': 'u', 'Ű': 'u',
+    };
+    let slug = title.toLowerCase().split('').map(char => accentMap[char] || char).join('');
+    slug = slug
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim()
       .substring(0, 50);
+    return slug;
   };
 
   const extractVideoId = (url: string) => {
