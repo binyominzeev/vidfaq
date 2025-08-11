@@ -17,13 +17,13 @@ interface PublicVideoCardProps {
 
 const PublicVideoCard: React.FC<PublicVideoCardProps> = ({ video }) => {
   return (
-    <div className="border rounded-lg overflow-hidden shadow-sm bg-white">
+    <div className="border rounded-lg overflow-hidden shadow-sm bg-white justify-center items-center">
       {video.thumbnail_url && (
         <img
           src={video.thumbnail_url}
           alt={video.title}
           className="w-full h-48 object-cover"
-          style={{ width: '50%', height: '80%' }}
+          style={{ width: '50%', height: '60%' }}
         />
       )}
       <div className="p-4">
