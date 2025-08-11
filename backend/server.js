@@ -14,7 +14,7 @@ app.post('/api/fetch-thumbnail', async (req, res) => {
   if (!url) return res.status(400).json({ error: 'Missing url' });
 
   // Use a unique filename based on video ID or timestamp
-  const outputDir = path.join(__dirname, 'thumbnails');
+  const outputDir = path.join(__dirname, '../thumbnails');
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
   // yt-dlp will save thumbnail as [video-id].[ext]
@@ -38,6 +38,6 @@ function getVideoId(url) {
   return match ? match[1] : '';
 }
 
-app.use('/thumbnails', express.static(path.join(__dirname, 'thumbnails')));
+app.use('/thumbnails', express.static(path.join(__dirname, '../thumbnails')));
 
 app.listen(3001, () => console.log('API running on port 3001'));
