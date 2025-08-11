@@ -14,8 +14,10 @@ const PublicProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [debugSubdomain, setDebugSubdomain] = useState<string | null>(null);
   useEffect(() => {
     const subdomain = getSubdomain();
+    setDebugSubdomain(subdomain);
     if (!subdomain) {
       setLoading(false);
       return;
@@ -45,6 +47,9 @@ const PublicProfile = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Profile not found</h2>
           <p className="text-muted-foreground">This subdomain does not exist.</p>
+          <div className="mt-4 text-xs text-gray-400">
+            Debug: Queried subdomain: <b>{debugSubdomain ?? "(none)"}</b>
+          </div>
         </div>
       </div>
     );
@@ -59,6 +64,10 @@ const PublicProfile = () => {
           </CardHeader>
           <CardContent>
             <p className="mb-4">{profile.bio}</p>
+            <div className="mt-2 text-xs text-gray-400">
+              Debug: User ID: <b>{profile.id}</b><br />
+              Debug: Subdomain: <b>{profile.subdomain}</b>
+            </div>
             {/* Add more profile info here if needed */}
           </CardContent>
         </Card>
