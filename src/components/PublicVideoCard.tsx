@@ -29,7 +29,7 @@ const PublicVideoCard: React.FC<PublicVideoCardProps> = ({ video }) => {
         <h3 className="text-lg font-bold mb-2">{video.title}</h3>
         {video.description && <p className="text-sm text-muted-foreground mb-2">{video.description}</p>}
         <a
-          href={`/video/${video.video_slug}`}
+          href={`/${video.video_slug}`}
           className="inline-block mt-2 text-indigo-600 hover:underline font-medium"
         >
           View Details
