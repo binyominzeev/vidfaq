@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import VideoManager from "@/components/VideoManager";
+import PublicVideoGallery from "@/components/PublicVideoGallery";
 
 function getSubdomain() {
   const host = window.location.hostname;
@@ -63,7 +63,7 @@ const PublicProfile = () => {
           </CardContent>
         </Card>
         <div className="mt-8">
-          <VideoManager userId={profile.id} maxVideos={profile.video_limit || 10} />
+          <PublicVideoGallery userId={profile.id} maxVideos={profile.video_limit || 10} />
         </div>
       </div>
     </div>
