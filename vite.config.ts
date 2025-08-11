@@ -24,6 +24,9 @@ export default defineConfig(({ mode }) => ({
       credentials: true,
     },
     allowedHosts: [".vidfaq.com", "localhost"],
+    proxy: {
+      '/api': 'http://localhost:3001'
+    }
   },
   plugins: [
     react(),
