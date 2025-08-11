@@ -100,7 +100,7 @@ const VideoCard = ({ video, onUpdate, onDelete }: VideoCardProps) => {
               src={video.thumbnail_url}
               alt={video.title}
               className="object-contain"
-              style={{ width: '50%', height: '50%' }}
+              style={{ width: '50%', height: '100%' }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ height: '240px' }}>
