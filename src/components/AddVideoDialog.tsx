@@ -98,6 +98,20 @@ const AddVideoDialog = ({
         throw new Error('A video with a similar title already exists');
       }
 
+      // Attempt to fetch thumbnail
+      let thumbnailUrl: string | null = null;
+      try {
+        const resp = await fetch('/api/fetch-thumbnail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: tiktokUrl }),
+        });
+        const data = await resp.json();
+        thumbnailUrl = data.thumbnailUrl || null;
+      } catch (err) {
+        // fallback: leave thumbnailUrl as null
+      }
+
       const { error } = await supabase
         .from('videos')
         .insert({
@@ -107,8 +121,7 @@ const AddVideoDialog = ({
           description: description || null,
           video_slug: slug,
           position: currentVideoCount,
-          // TODO: Extract thumbnail from TikTok API
-          thumbnail_url: null,
+          thumbnail_url: thumbnailUrl,
         });
 
       if (error) throw error;
