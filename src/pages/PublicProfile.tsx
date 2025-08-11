@@ -72,7 +72,7 @@ const PublicProfile = () => {
           </CardContent>
         </Card>
         <div className="mt-8">
-          <PublicVideoGallery userId={profile.id} maxVideos={profile.video_limit || 10} />
+          <PublicVideoGallery userId={profile.user_id} maxVideos={profile.video_limit || 10} />
         </div>
       </div>
     </div>
