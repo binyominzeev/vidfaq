@@ -94,16 +94,16 @@ const VideoCard = ({ video, onUpdate, onDelete }: VideoCardProps) => {
     <Card className="overflow-hidden">
       <CardContent className="p-0">
         {/* Thumbnail */}
-        <div className="relative w-full flex justify-center items-center" style={{ aspectRatio: '9/16', background: 'var(--muted)' }}>
+        <div className="relative w-full flex justify-center items-center" style={{ height: '240px', background: 'var(--muted)' }}>
           {video.thumbnail_url ? (
             <img
               src={video.thumbnail_url}
               alt={video.title}
               className="object-contain"
-              style={{ aspectRatio: '9/16', width: '50%', height: '50%' }}
+              style={{ width: '50%', height: '50%' }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center" style={{ aspectRatio: '9/16' }}>
+            <div className="w-full h-full flex items-center justify-center" style={{ height: '240px' }}>
               <span className="text-muted-foreground">No thumbnail</span>
             </div>
           )}
