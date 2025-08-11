@@ -26,7 +26,7 @@ app.post('/api/fetch-thumbnail', async (req, res) => {
 
   // yt-dlp will save thumbnail as [video-id].[ext]
   const ytDlpCmd = `yt-dlp --skip-download --write-thumbnail --output "${outputDir}/%(id)s.%(ext)s" "${url}"`;
-  console.log('Executing:', ytDlpCmd);
+  //console.log('Executing:', ytDlpCmd);
   exec(ytDlpCmd, (err, stdout, stderr) => {
     if (err) return res.status(500).json({ error: 'yt-dlp failed', details: stderr });
 
@@ -35,7 +35,7 @@ app.post('/api/fetch-thumbnail', async (req, res) => {
       if (err) return res.status(500).json({ error: 'Failed to read thumbnails' });
       const thumb = files.find(f => f.startsWith(videoId + '.'));
       if (!thumb) return res.status(404).json({ error: 'Thumbnail not found' });
-      console.log('Sending thumbnail:', thumb);
+      //console.log('Sending thumbnail:', thumb);
       // Serve the thumbnail URL (you may want to move it to public hosting)
       res.json({ thumbnailUrl: `/thumbnails/${thumb}`, filename: thumb, command: ytDlpCmd });
     });
