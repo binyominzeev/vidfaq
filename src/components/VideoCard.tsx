@@ -25,6 +25,12 @@ interface VideoCardProps {
 
 const VideoCard = ({ video, onUpdate, onDelete }: VideoCardProps) => {
   const [loading, setLoading] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editLink, setEditLink] = useState(video.tiktok_url);
+  const [editTitle, setEditTitle] = useState(video.title);
+  const [editDescription, setEditDescription] = useState(video.description || "");
+  const [editSlug, setEditSlug] = useState(video.video_slug);
+  const [editSaving, setEditSaving] = useState(false);
 
   const toggleActive = async () => {
     setLoading(true);
@@ -146,16 +152,96 @@ const VideoCard = ({ video, onUpdate, onDelete }: VideoCardProps) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  // TODO: Implement edit functionality
-                  toast({
-                    title: 'Coming soon',
-                    description: 'Video editing will be available soon.',
-                  });
-                }}
+                onClick={() => setEditOpen(true)}
               >
                 <Edit className="h-4 w-4" />
               </Button>
+      {/* Edit Modal */}
+      {editOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit Video</h2>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">TikTok Link</label>
+              <input
+                type="text"
+                value={editLink}
+                onChange={e => setEditLink(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                disabled={editSaving}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Title</label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={e => setEditTitle(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                disabled={editSaving}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea
+                value={editDescription}
+                onChange={e => setEditDescription(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                disabled={editSaving}
+                rows={3}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Slug</label>
+              <input
+                type="text"
+                value={editSlug}
+                onChange={e => setEditSlug(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                disabled={editSaving}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditOpen(false)} disabled={editSaving}>Cancel</Button>
+              <Button
+                onClick={async () => {
+                  setEditSaving(true);
+                  try {
+                    const { error } = await supabase
+                      .from('videos')
+                      .update({
+                        tiktok_url: editLink,
+                        title: editTitle,
+                        description: editDescription,
+                        video_slug: editSlug,
+                      })
+                      .eq('id', video.id);
+                    if (error) throw error;
+                    toast({
+                      title: 'Video updated!',
+                      description: 'Your changes have been saved.',
+                      variant: 'default',
+                    });
+                    setEditOpen(false);
+                    onUpdate();
+                  } catch (error) {
+                    toast({
+                      title: 'Error updating video',
+                      description: 'Please try again.',
+                      variant: 'destructive',
+                    });
+                  } finally {
+                    setEditSaving(false);
+                  }
+                }}
+                disabled={editSaving || !editLink || !editTitle || !editSlug}
+              >
+                {editSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
               <Button
                 variant="outline"
                 size="sm"

@@ -32,10 +32,47 @@ interface Subscription {
 }
 
 const Dashboard = () => {
+  const openSettings = () => {
+    setSettingsFullName(profile?.full_name || "");
+    setSettingsSubdomain(profile?.subdomain || "");
+    setSettingsOpen(true);
+  };
+
+  const handleSettingsSave = async () => {
+    if (!user) return;
+    setSettingsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: settingsFullName, subdomain: settingsSubdomain })
+        .eq('user_id', user.id);
+      if (error) throw error;
+      setProfile(prev => prev ? { ...prev, full_name: settingsFullName, subdomain: settingsSubdomain } : prev);
+      setSubdomainInput(settingsSubdomain);
+      toast({
+        title: 'Profile updated!',
+        description: 'Your changes have been saved.',
+        variant: 'default',
+      });
+      setSettingsOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Error updating profile',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [subdomainInput, setSubdomainInput] = useState<string>("");
   const [subdomainSaving, setSubdomainSaving] = useState<boolean>(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsFullName, setSettingsFullName] = useState("");
+  const [settingsSubdomain, setSettingsSubdomain] = useState("");
+  const [settingsSaving, setSettingsSaving] = useState(false);
 
   const handleSubdomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubdomainInput(e.target.value);
@@ -87,6 +124,41 @@ const Dashboard = () => {
       if (error) throw error;
   setProfile(data);
   setSubdomainInput(data?.subdomain || "");
+  setSettingsFullName(data?.full_name || "");
+  setSettingsSubdomain(data?.subdomain || "");
+  const openSettings = () => {
+    setSettingsFullName(profile?.full_name || "");
+    setSettingsSubdomain(profile?.subdomain || "");
+    setSettingsOpen(true);
+  };
+
+  const handleSettingsSave = async () => {
+    if (!user) return;
+    setSettingsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: settingsFullName, subdomain: settingsSubdomain })
+        .eq('user_id', user.id);
+      if (error) throw error;
+      setProfile(prev => prev ? { ...prev, full_name: settingsFullName, subdomain: settingsSubdomain } : prev);
+      setSubdomainInput(settingsSubdomain);
+      toast({
+        title: 'Profile updated!',
+        description: 'Your changes have been saved.',
+        variant: 'default',
+      });
+      setSettingsOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Error updating profile',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSettingsSaving(false);
+    }
+  };
   const handleSubdomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubdomainInput(e.target.value);
   };
@@ -182,9 +254,44 @@ const Dashboard = () => {
               <Badge variant={subscription?.plan_type === 'premium' ? 'default' : 'secondary'}>
                 {subscription?.plan_type?.toUpperCase() || 'FREE'}
               </Badge>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={openSettings}>
                 <Settings className="h-4 w-4" />
               </Button>
+      {/* Settings Modal */}
+      {settingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Full Name</label>
+              <input
+                type="text"
+                value={settingsFullName}
+                onChange={e => setSettingsFullName(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                disabled={settingsSaving}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Subdomain</label>
+              <input
+                type="text"
+                value={settingsSubdomain}
+                onChange={e => setSettingsSubdomain(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                disabled={settingsSaving}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Your site: <b>{settingsSubdomain ? `${settingsSubdomain}.vidfaq.com` : 'Not set'}</b></p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setSettingsOpen(false)} disabled={settingsSaving}>Cancel</Button>
+              <Button onClick={handleSettingsSave} disabled={settingsSaving || !settingsFullName || !settingsSubdomain}>
+                {settingsSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
               <Button variant="ghost" size="sm" onClick={signOut}>
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -211,27 +318,12 @@ const Dashboard = () => {
               <CardTitle className="text-sm font-medium">Your Subdomain</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  value={subdomainInput}
-                  onChange={handleSubdomainChange}
-                  className="border rounded px-3 py-2 text-lg font-bold"
-                  placeholder="Enter subdomain"
-                  disabled={subdomainSaving}
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSubdomainSave}
-                  disabled={subdomainSaving || !subdomainInput}
-                  className="w-fit"
-                >
-                  {subdomainSaving ? "Saving..." : "Update"}
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  {subdomainInput ? `${subdomainInput}.vidfaq.com` : 'Configure your subdomain'}
-                </p>
+              <div className="text-2xl font-bold">
+                {profile?.subdomain || 'Not set'}
               </div>
+              <p className="text-xs text-muted-foreground">
+                {profile?.subdomain ? `${profile.subdomain}.vidfaq.com` : 'Configure your subdomain'}
+              </p>
             </CardContent>
           </Card>
           

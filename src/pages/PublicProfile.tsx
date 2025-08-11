@@ -64,10 +64,6 @@ const PublicProfile = () => {
           </CardHeader>
           <CardContent>
             <p className="mb-4">{profile.bio}</p>
-            <div className="mt-2 text-xs text-gray-400">
-              Debug: User ID: <b>{profile.id}</b><br />
-              Debug: Subdomain: <b>{profile.subdomain}</b>
-            </div>
             {/* Add more profile info here if needed */}
           </CardContent>
         </Card>
