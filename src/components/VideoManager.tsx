@@ -161,7 +161,7 @@ const VideoManager = ({ userId, maxVideos }: VideoManagerProps) => {
                 items={videos.map(v => v.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex flex-col gap-4">
                   {videos.map((video) => (
                     <SortableVideoCard
                       key={video.id}
