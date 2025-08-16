@@ -78,7 +78,7 @@ const PublicVideoView = ({ slug }: PublicVideoViewProps) => {
             <iframe
               src={`https://www.tiktok.com/embed/v2/${extractTikTokId(video.tiktok_url)}`}
               width="100%"
-              height="400"
+              height="800"
               allow="encrypted-media"
               allowFullScreen
               frameBorder="0"
