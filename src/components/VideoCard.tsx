@@ -107,11 +107,6 @@ const VideoCard = ({ video, onUpdate, onDelete }: VideoCardProps) => {
               <span className="text-muted-foreground">No thumbnail</span>
             </div>
           )}
-          <div className="absolute top-2 left-2">
-            <Badge variant={video.is_active ? 'default' : 'secondary'}>
-              {video.is_active ? 'Live' : 'Hidden'}
-            </Badge>
-          </div>
         </div>
         
         {/* Content */}
