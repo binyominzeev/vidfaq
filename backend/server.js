@@ -22,6 +22,7 @@ app.post('/api/download-subs', async (req, res) => {
 
   // List available subtitles
   const listCmd = `yt-dlp --skip-download --list-subs "${url}"`;
+    console.log('[DEBUG] yt-dlp listCmd:', listCmd);
   exec(listCmd, (err, stdout, stderr) => {
     if (err) return res.status(500).json({ error: 'yt-dlp failed', details: stderr });
     // Parse output for available subtitles
@@ -44,6 +45,7 @@ app.post('/api/download-subs', async (req, res) => {
     const outputDir = path.join(__dirname, '../subtitles');
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
     const downloadCmd = `yt-dlp --write-subs --sub-langs ${subLang} --skip-download --output "${outputDir}/%(id)s.%(ext)s" "${url}"`;
+      console.log('[DEBUG] yt-dlp downloadCmd:', downloadCmd);
     exec(downloadCmd, (err2, stdout2, stderr2) => {
       if (err2) return res.status(500).json({ error: 'yt-dlp subtitle download failed', details: stderr2 });
       // Find the subtitle file
@@ -55,8 +57,8 @@ app.post('/api/download-subs', async (req, res) => {
         console.log('[DEBUG] Files in subtitle outputDir:', files);
         const subFile = files.find(f => f.startsWith(id + '.') && f.endsWith('.vtt'));
         if (!subFile) {
-          console.error('[DEBUG] Subtitle not found after download:', { id, files, outputDir });
-          return res.status(404).json({ error: 'Subtitle not found after download', debug: { id, files, outputDir } });
+          console.error('[DEBUG] Subtitle not found after download:', { id, files, outputDir, downloadCmd });
+          return res.status(404).json({ error: 'Subtitle not found after download', debug: { id, files, outputDir, downloadCmd } });
         }
         // Read subtitle file content
         const subPath = path.join(outputDir, subFile);
@@ -107,7 +109,7 @@ app.post('/api/fetch-thumbnail', async (req, res) => {
 
   // yt-dlp will save thumbnail as [video-id].[ext]
   const ytDlpCmd = `yt-dlp --skip-download --write-thumbnail --output "${outputDir}/%(id)s.%(ext)s" "${url}"`;
-  //console.log('Executing:', ytDlpCmd);
+    console.log('[DEBUG] yt-dlp thumbnailCmd:', ytDlpCmd);
   exec(ytDlpCmd, (err, stdout, stderr) => {
     if (err) return res.status(500).json({ error: 'yt-dlp failed', details: stderr });
 
