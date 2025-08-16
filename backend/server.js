@@ -60,18 +60,19 @@ app.post('/api/download-subs', async (req, res) => {
           return res.status(500).json({ error: 'Failed to read subtitle file' });
         }
         // Save to Supabase videos.transcription
-        try {
-          const { error: dbError } = await supabase
-            .from('videos')
-            .update({ transcription })
-            .eq('id', id);
-          if (dbError) {
-            return res.status(500).json({ error: 'Failed to save transcription to Supabase', details: dbError });
-          }
-        } catch (e) {
-          return res.status(500).json({ error: 'Supabase update error', details: e });
-        }
-        res.json({ available: subs, downloaded: true, subtitleUrl: `/subtitles/${subFile}`, filename: subFile, command: downloadCmd });
+        supabase
+          .from('videos')
+          .update({ transcription })
+          .eq('id', id)
+          .then(({ error: dbError }) => {
+            if (dbError) {
+              return res.status(500).json({ error: 'Failed to save transcription to Supabase', details: dbError });
+            }
+            res.json({ available: subs, downloaded: true, subtitleUrl: `/subtitles/${subFile}`, filename: subFile, command: downloadCmd, savedToSupabase: true });
+          })
+          .catch(e => {
+            return res.status(500).json({ error: 'Supabase update error', details: e });
+          });
       });
     });
   });
