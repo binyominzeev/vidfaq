@@ -1,4 +1,17 @@
 import { useState, useEffect } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,16 +128,49 @@ const VideoManager = ({ userId, maxVideos }: VideoManagerProps) => {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {videos.map((video) => (
-                <VideoCard
-                  key={video.id}
-                  video={video}
-                  onUpdate={handleVideoUpdated}
-                  onDelete={handleVideoDeleted}
-                />
-              ))}
-            </div>
+            <DndContext
+              sensors={useSensors(
+                useSensor(PointerSensor),
+              )}
+              collisionDetection={closestCenter}
+              onDragEnd={async (event) => {
+                const { active, over } = event;
+                if (active.id !== over?.id) {
+                  const oldIndex = videos.findIndex(v => v.id === active.id);
+                  const newIndex = videos.findIndex(v => v.id === over?.id);
+                  const newVideos = arrayMove(videos, oldIndex, newIndex);
+                  setVideos(newVideos);
+                  // Update positions in Supabase
+                  await Promise.all(newVideos.map((video, idx) =>
+                    supabase
+                      .from('videos')
+                      .update({ position: idx })
+                      .eq('id', video.id)
+                  ));
+                  toast({
+                    title: 'Order updated',
+                    description: 'Video order has been saved.',
+                  });
+                }
+              }}
+            >
+              <SortableContext
+                items={videos.map(v => v.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {videos.map((video) => (
+                    <VideoCard
+                      key={video.id}
+                      video={video}
+                      onUpdate={handleVideoUpdated}
+                      onDelete={handleVideoDeleted}
+                      id={video.id}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </CardContent>
       </Card>
