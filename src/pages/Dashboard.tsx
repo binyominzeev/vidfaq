@@ -38,39 +38,7 @@ interface Subscription {
 }
 
 const Dashboard = () => {
-  const openSettings = () => {
-    setSettingsFullName(profile?.full_name || "");
-    setSettingsSubdomain(profile?.subdomain || "");
-    setSettingsOpen(true);
-  };
-
-  const handleSettingsSave = async () => {
-    if (!user) return;
-    setSettingsSaving(true);
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ full_name: settingsFullName, subdomain: settingsSubdomain })
-        .eq('user_id', user.id);
-      if (error) throw error;
-      setProfile(prev => prev ? { ...prev, full_name: settingsFullName, subdomain: settingsSubdomain } : prev);
-      setSubdomainInput(settingsSubdomain);
-      toast({
-        title: 'Profile updated!',
-        description: 'Your changes have been saved.',
-        variant: 'default',
-      });
-      setSettingsOpen(false);
-    } catch (error) {
-      toast({
-        title: 'Error updating profile',
-        description: 'Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setSettingsSaving(false);
-    }
-  };
+  // ...existing code...
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [subdomainInput, setSubdomainInput] = useState<string>("");
@@ -81,35 +49,7 @@ const Dashboard = () => {
   const [settingsDescription, setSettingsDescription] = useState("");
   const [settingsSaving, setSettingsSaving] = useState(false);
 
-  const handleSubdomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSubdomainInput(e.target.value);
-  };
-
-  const handleSubdomainSave = async () => {
-    if (!user || !subdomainInput) return;
-    setSubdomainSaving(true);
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ subdomain: subdomainInput })
-        .eq('user_id', user.id);
-      if (error) throw error;
-      setProfile(prev => prev ? { ...prev, subdomain: subdomainInput } : prev);
-      toast({
-        title: 'Subdomain updated!',
-        description: `Your site is now available at https://${subdomainInput}.vidfaq.com`,
-        variant: 'default',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error updating subdomain',
-        description: 'Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setSubdomainSaving(false);
-    }
-  };
+  // ...existing code...
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -129,11 +69,21 @@ const Dashboard = () => {
         .single();
 
       if (error) throw error;
-  setProfile(data);
-  setSubdomainInput(data?.subdomain || "");
-  setSettingsFullName(data?.full_name || "");
-  setSettingsSubdomain(data?.subdomain || "");
-  setSettingsDescription(data?.description || "");
+      setProfile(data);
+      setSubdomainInput(data?.subdomain || "");
+      setSettingsFullName(data?.full_name || "");
+      setSettingsSubdomain(data?.subdomain || "");
+      setSettingsDescription(data?.description || "");
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      toast({
+        title: 'Error loading profile',
+        description: 'Please try refreshing the page.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const openSettings = () => {
     setSettingsFullName(profile?.full_name || "");
     setSettingsSubdomain(profile?.subdomain || "");
@@ -177,44 +127,7 @@ const Dashboard = () => {
       setSettingsSaving(false);
     }
   };
-  const handleSubdomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSubdomainInput(e.target.value);
-  };
-
-  const handleSubdomainSave = async () => {
-    if (!user || !subdomainInput) return;
-    setSubdomainSaving(true);
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ subdomain: subdomainInput })
-        .eq('user_id', user.id);
-      if (error) throw error;
-      setProfile(prev => prev ? { ...prev, subdomain: subdomainInput } : prev);
-      toast({
-        title: 'Subdomain updated!',
-        description: `Your site is now available at https://${subdomainInput}.vidfaq.com`,
-        variant: 'default',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error updating subdomain',
-        description: 'Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setSubdomainSaving(false);
-    }
-  };
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast({
-        title: 'Error loading profile',
-        description: 'Please try refreshing the page.',
-        variant: 'destructive',
-      });
-    }
-  };
+  // ...existing code...
 
   const fetchSubscription = async () => {
     try {
