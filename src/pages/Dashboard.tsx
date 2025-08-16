@@ -233,7 +233,7 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-              <Button variant="ghost" size="sm" onClick={async () => { await signOut(); window.location.reload(); }}>
+              <Button variant="ghost" size="sm" onClick={async () => { await signOut(); window.location.href = '/'; }}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
