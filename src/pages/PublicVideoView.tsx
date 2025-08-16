@@ -64,12 +64,6 @@ const PublicVideoView = ({ slug }: PublicVideoViewProps) => {
 
   return (
     <div className="min-h-screen bg-background px-4 py-12 relative">
-      <button
-        onClick={async () => { await signOut(); window.location.reload(); }}
-        className="absolute top-6 right-6 px-4 py-2 bg-primary text-white rounded shadow hover:bg-primary/80 transition"
-      >
-        Log out
-      </button>
       <div className="max-w-xl mx-auto">
         {profile && (
           <PublicProfileHeader
