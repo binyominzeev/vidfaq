@@ -48,16 +48,24 @@ app.post('/api/download-subs', async (req, res) => {
       if (err2) return res.status(500).json({ error: 'yt-dlp subtitle download failed', details: stderr2 });
       // Find the subtitle file
       fs.readdir(outputDir, (err3, files) => {
-        if (err3) return res.status(500).json({ error: 'Failed to read subtitles' });
+        if (err3) {
+          console.error('[DEBUG] Failed to read subtitles directory:', outputDir, err3);
+          return res.status(500).json({ error: 'Failed to read subtitles', debug: { outputDir, err3 } });
+        }
+        console.log('[DEBUG] Files in subtitle outputDir:', files);
         const subFile = files.find(f => f.startsWith(id + '.') && f.endsWith('.vtt'));
-        if (!subFile) return res.status(404).json({ error: 'Subtitle not found after download' });
+        if (!subFile) {
+          console.error('[DEBUG] Subtitle not found after download:', { id, files, outputDir });
+          return res.status(404).json({ error: 'Subtitle not found after download', debug: { id, files, outputDir } });
+        }
         // Read subtitle file content
         const subPath = path.join(outputDir, subFile);
         let transcription = '';
         try {
           transcription = fs.readFileSync(subPath, 'utf8');
         } catch (e) {
-          return res.status(500).json({ error: 'Failed to read subtitle file' });
+          console.error('[DEBUG] Failed to read subtitle file:', subPath, e);
+          return res.status(500).json({ error: 'Failed to read subtitle file', debug: { subPath, e } });
         }
         // Save to Supabase videos.transcription
         supabase
@@ -66,11 +74,13 @@ app.post('/api/download-subs', async (req, res) => {
           .eq('id', id)
           .then(({ error: dbError }) => {
             if (dbError) {
+              console.error('[DEBUG] Failed to save transcription to Supabase:', dbError);
               return res.status(500).json({ error: 'Failed to save transcription to Supabase', details: dbError });
             }
             res.json({ available: subs, downloaded: true, subtitleUrl: `/subtitles/${subFile}`, filename: subFile, command: downloadCmd, savedToSupabase: true });
           })
           .catch(e => {
+            console.error('[DEBUG] Supabase update error:', e);
             return res.status(500).json({ error: 'Supabase update error', details: e });
           });
       });
