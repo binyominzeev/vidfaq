@@ -11,8 +11,8 @@ app.use(express.json());
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const SUPABASE_URL = "https://puddrfjzujikfehidzky.supabase.co";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "";
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1ZGRyZmp6dWppa2ZlaGlkemt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4NTQwOTAsImV4cCI6MjA3MDQzMDA5MH0.ZYScbz1fXKOD2T194TO0EXnR0UOpsTTuj7HpLHX67v4";
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // API to list and download non-English subtitles from TikTok video
 app.post('/api/download-subs', async (req, res) => {
