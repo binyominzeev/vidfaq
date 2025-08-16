@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import PublicProfileHeader from "@/components/PublicProfileHeader";
 import PublicVideoGallery from "@/components/PublicVideoGallery";
 
 function getSubdomain() {
@@ -58,15 +58,11 @@ const PublicProfile = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>{profile.full_name || profile.username}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">{profile.bio}</p>
-            {/* Add more profile info here if needed */}
-          </CardContent>
-        </Card>
+        <PublicProfileHeader
+          name={profile.full_name || profile.username}
+          description={profile.description}
+          subdomain={profile.subdomain}
+        />
         <div className="mt-8">
           <PublicVideoGallery userId={profile.user_id} maxVideos={profile.video_limit || 10} />
         </div>

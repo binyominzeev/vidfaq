@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import PublicProfileHeader from "@/components/PublicProfileHeader";
 
 interface Video {
   id: string;
@@ -21,10 +22,15 @@ const PublicVideoView = ({ slug }: PublicVideoViewProps) => {
   const params = useParams<{ slug: string }>();
   const videoSlug = slug ?? params.slug;
   const [video, setVideo] = useState<Video | null>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!videoSlug) return;
+    // Get subdomain
+    const host = window.location.hostname;
+    const subdomain = host.split('.')[0];
+    // Fetch video
     supabase
       .from("videos")
       .select("*")
@@ -33,7 +39,16 @@ const PublicVideoView = ({ slug }: PublicVideoViewProps) => {
       .single()
       .then(({ data }) => {
         setVideo(data);
-        setLoading(false);
+        // Fetch profile for header
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("subdomain", subdomain)
+          .single()
+          .then(({ data }) => {
+            setProfile(data);
+            setLoading(false);
+          });
       });
   }, [videoSlug]);
 
@@ -46,21 +61,30 @@ const PublicVideoView = ({ slug }: PublicVideoViewProps) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12">
-      <div className="max-w-xl w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
-        {video.description && <p className="mb-4 text-muted-foreground">{video.description}</p>}
-        {/* Embedded TikTok player */}
-        <div className="aspect-video mb-4">
-          <iframe
-            src={`https://www.tiktok.com/embed/v2/${extractTikTokId(video.tiktok_url)}`}
-            width="100%"
-            height="400"
-            allow="encrypted-media"
-            allowFullScreen
-            frameBorder="0"
-            title="TikTok Video"
+    <div className="min-h-screen bg-background px-4 py-12">
+      <div className="max-w-xl mx-auto">
+        {profile && (
+          <PublicProfileHeader
+            name={profile.full_name || profile.username}
+            description={profile.description}
+            subdomain={profile.subdomain}
           />
+        )}
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
+          {video.description && <p className="mb-4 text-muted-foreground">{video.description}</p>}
+          {/* Embedded TikTok player */}
+          <div className="aspect-video mb-4">
+            <iframe
+              src={`https://www.tiktok.com/embed/v2/${extractTikTokId(video.tiktok_url)}`}
+              width="100%"
+              height="400"
+              allow="encrypted-media"
+              allowFullScreen
+              frameBorder="0"
+              title="TikTok Video"
+            />
+          </div>
         </div>
       </div>
     </div>

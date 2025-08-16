@@ -24,6 +24,11 @@ interface Profile {
   subdomain: string | null;
   is_premium: boolean;
   description?: string;
+  avatar_url?: string;
+  created_at?: string;
+  subscription_id?: string;
+  updated_at?: string;
+  user_id: string;
 }
 
 interface Subscription {
