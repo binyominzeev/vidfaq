@@ -23,6 +23,7 @@ interface Profile {
   full_name: string | null;
   subdomain: string | null;
   is_premium: boolean;
+  description?: string;
 }
 
 interface Subscription {
@@ -72,6 +73,7 @@ const Dashboard = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsFullName, setSettingsFullName] = useState("");
   const [settingsSubdomain, setSettingsSubdomain] = useState("");
+  const [settingsDescription, setSettingsDescription] = useState("");
   const [settingsSaving, setSettingsSaving] = useState(false);
 
   const handleSubdomainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,9 +128,11 @@ const Dashboard = () => {
   setSubdomainInput(data?.subdomain || "");
   setSettingsFullName(data?.full_name || "");
   setSettingsSubdomain(data?.subdomain || "");
+  setSettingsDescription(data?.description || "");
   const openSettings = () => {
     setSettingsFullName(profile?.full_name || "");
     setSettingsSubdomain(profile?.subdomain || "");
+    setSettingsDescription(profile?.description || "");
     setSettingsOpen(true);
   };
 
@@ -138,10 +142,19 @@ const Dashboard = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ full_name: settingsFullName, subdomain: settingsSubdomain })
+        .update({
+          full_name: settingsFullName,
+          subdomain: settingsSubdomain,
+          description: settingsDescription,
+        })
         .eq('user_id', user.id);
       if (error) throw error;
-      setProfile(prev => prev ? { ...prev, full_name: settingsFullName, subdomain: settingsSubdomain } : prev);
+      setProfile(prev => prev ? {
+        ...prev,
+        full_name: settingsFullName,
+        subdomain: settingsSubdomain,
+        description: settingsDescription,
+      } : prev);
       setSubdomainInput(settingsSubdomain);
       toast({
         title: 'Profile updated!',
@@ -282,6 +295,16 @@ const Dashboard = () => {
                 disabled={settingsSaving}
               />
               <p className="text-xs text-muted-foreground mt-1">Your site: <b>{settingsSubdomain ? `${settingsSubdomain}.vidfaq.com` : 'Not set'}</b></p>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Short Description</label>
+              <textarea
+                value={settingsDescription}
+                onChange={e => setSettingsDescription(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+                disabled={settingsSaving}
+                rows={2}
+              />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setSettingsOpen(false)} disabled={settingsSaving}>Cancel</Button>

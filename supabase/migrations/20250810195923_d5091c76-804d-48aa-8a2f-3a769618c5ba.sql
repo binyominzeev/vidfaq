@@ -9,6 +9,7 @@ CREATE TABLE public.profiles (
   subdomain TEXT UNIQUE,
   is_premium BOOLEAN DEFAULT FALSE,
   subscription_id TEXT,
+  description TEXT,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
