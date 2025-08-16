@@ -87,6 +87,9 @@ const PublicVideoView = ({ slug }: PublicVideoViewProps) => {
           </div>
         </div>
       </div>
+      <footer className="w-full py-4 bg-white border-t text-center text-xs text-gray-500">
+        Powered by <a href="https://vidfaq.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">VidFAQ</a>
+      </footer>
     </div>
   );
 };
