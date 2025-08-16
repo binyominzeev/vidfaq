@@ -10,6 +10,7 @@ import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
+  rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { supabase } from '@/integrations/supabase/client';
@@ -159,7 +160,7 @@ const VideoManager = ({ userId, maxVideos }: VideoManagerProps) => {
             >
               <SortableContext
                 items={videos.map(v => v.id)}
-                strategy={require('@dnd-kit/sortable').rectSortingStrategy}
+                strategy={rectSortingStrategy}
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {videos.map((video) => (
