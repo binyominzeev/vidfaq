@@ -80,6 +80,11 @@ const VideoManager = ({ userId, maxVideos }: VideoManagerProps) => {
     fetchVideos();
   };
 
+  // Move sensors hook to top level
+  const sensors = useSensors(
+    useSensor(PointerSensor)
+  );
+
   if (loading) {
     return (
       <Card>
@@ -129,9 +134,7 @@ const VideoManager = ({ userId, maxVideos }: VideoManagerProps) => {
             </div>
           ) : (
             <DndContext
-              sensors={useSensors(
-                useSensor(PointerSensor),
-              )}
+              sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={async (event) => {
                 const { active, over } = event;
@@ -165,7 +168,6 @@ const VideoManager = ({ userId, maxVideos }: VideoManagerProps) => {
                       video={video}
                       onUpdate={handleVideoUpdated}
                       onDelete={handleVideoDeleted}
-                      id={video.id}
                     />
                   ))}
                 </div>
