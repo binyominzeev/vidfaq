@@ -56,8 +56,8 @@ const PublicProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="max-w-3xl mx-auto px-4 py-8 flex-1">
         <PublicProfileHeader
           name={profile.full_name || profile.username}
           description={profile.description}
@@ -67,6 +67,9 @@ const PublicProfile = () => {
           <PublicVideoGallery userId={profile.user_id} maxVideos={profile.video_limit || 10} />
         </div>
       </div>
+      <footer className="w-full py-4 bg-white border-t text-center text-xs text-gray-500">
+        Powered by <a href="https://vidfaq.com" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">VidFAQ</a>
+      </footer>
     </div>
   );
 };
