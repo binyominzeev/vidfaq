@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import VideoCard from './VideoCard';
+import SortableVideoCard from './SortableVideoCard';
 import AddVideoDialog from './AddVideoDialog';
 
 interface Video {
@@ -163,7 +163,7 @@ const VideoManager = ({ userId, maxVideos }: VideoManagerProps) => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {videos.map((video) => (
-                    <VideoCard
+                    <SortableVideoCard
                       key={video.id}
                       video={video}
                       onUpdate={handleVideoUpdated}
