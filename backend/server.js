@@ -30,11 +30,20 @@ app.post('/api/download-subs', async (req, res) => {
     // Language Formats
     // eng-US   vtt
     // hun-HU   vtt
-    const lines = stdout.split('\n').filter(l => l.trim() && !l.startsWith('Language'));
-    const subs = lines.map(line => {
-      const [lang, formats] = line.trim().split(/\s+/);
-      return { lang, formats };
-    });
+    // Parse yt-dlp output for available subtitles
+    const lines = stdout.split('\n');
+    const subs = [];
+    let parsing = false;
+    for (const line of lines) {
+      if (line.startsWith('Language Formats')) {
+        parsing = true;
+        continue;
+      }
+      if (parsing && line.trim() && !line.startsWith('[')) {
+        const [lang, formats] = line.trim().split(/\s+/);
+        if (lang && formats) subs.push({ lang, formats });
+      }
+    }
     // Find non-English subtitle (anything not eng-US)
     const nonEnglish = subs.find(s => s.lang && !s.lang.startsWith('eng'));
     if (!nonEnglish) {
