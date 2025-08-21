@@ -86,22 +86,22 @@ exec(listCmd, async (err, stdout, stderr) => {
         return res.status(500).json({ error: 'Failed to read subtitle file', debug: { subPath, e } });
       }
       // Save to Supabase videos.transcription by id
-      supabase
-        .from('videos')
-        .update({ transcription })
-        .eq('id', id)
-        .then(({ error: dbError }) => {
+      (async () => {
+        try {
+          const { error: dbError } = await supabase
+            .from('videos')
+            .update({ transcription })
+            .eq('id', id);
           if (dbError) {
             console.error('[DEBUG] Failed to save transcription to Supabase:', dbError);
             return res.status(500).json({ error: 'Failed to save transcription to Supabase', details: dbError });
           }
           res.json({ available: subs, downloaded: true, subtitleUrl: `/subtitles/${subFile}`, filename: subFile, command: downloadCmd, savedToSupabase: true });
-        })
-        .catch(e => {
+        } catch (e) {
           console.error('[DEBUG] Supabase update error:', e);
           return res.status(500).json({ error: 'Supabase update error', details: e });
-        });
-    });
+        }
+      })();
   });
 });
 
