@@ -102,12 +102,13 @@ app.post('/api/download-subs', async (req, res) => {
           .from('videos')
           .update({ transcription })
           .eq('id', id)
-          .then(({ error: dbError }) => {
+          .then(({ data: updateData, error: dbError, status, statusText }) => {
+            console.log('[DEBUG] Supabase update response:', { updateData, dbError, status, statusText });
             if (dbError) {
               console.error('[DEBUG] Failed to save transcription to Supabase:', dbError);
-              return res.status(500).json({ error: 'Failed to save transcription to Supabase', details: dbError });
+              return res.status(500).json({ error: 'Failed to save transcription to Supabase', details: dbError, updateData, status, statusText });
             }
-            res.json({ available: subs, downloaded: true, subtitleUrl: `/subtitles/${subFile}`, filename: subFile, command: downloadCmd, savedToSupabase: true });
+            res.json({ available: subs, downloaded: true, subtitleUrl: `/subtitles/${subFile}`, filename: subFile, command: downloadCmd, savedToSupabase: true, updateData, status, statusText });
           })
           .catch(e => {
             console.error('[DEBUG] Supabase update error:', e);
