@@ -23,117 +23,87 @@ app.post('/api/download-subs', async (req, res) => {
   // List available subtitles
   const listCmd = `yt-dlp --skip-download --list-subs "${url}"`;
     console.log('[DEBUG] yt-dlp listCmd:', listCmd);
-  exec(listCmd, (err, stdout, stderr) => {
-    if (err) return res.status(500).json({ error: 'yt-dlp failed', details: stderr });
-    // Parse output for available subtitles
-    // Example output:
-    // Language Formats
-    // eng-US   vtt
-    // hun-HU   vtt
-    // Parse yt-dlp output for available subtitles
-    const lines = stdout.split('\n');
-    const subs = [];
-    let parsing = false;
-    for (const line of lines) {
-      if (line.startsWith('Language Formats')) {
-        parsing = true;
-        continue;
-      }
-      if (parsing && line.trim() && !line.startsWith('[')) {
-        const [lang, formats] = line.trim().split(/\s+/);
-        if (lang && formats) subs.push({ lang, formats });
+exec(listCmd, async (err, stdout, stderr) => {
+  if (err) return res.status(500).json({ error: 'yt-dlp failed', details: stderr });
+  // Parse output for available subtitles
+  // Example output:
+  // Language Formats
+  // eng-US   vtt
+  // hun-HU   vtt
+  const lines = stdout.split('\n');
+  const subs = [];
+  let parsing = false;
+  for (const line of lines) {
+    if (line.startsWith('Language Formats')) {
+      parsing = true;
+      continue;
+    }
+    if (parsing && line.trim()) {
+      const parts = line.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        subs.push({ lang: parts[0], format: parts[1] });
       }
     }
-    // Find non-English subtitle (anything not eng-US)
-    const nonEnglish = subs.find(s => s.lang && !s.lang.startsWith('eng'));
-    if (!nonEnglish) {
-      return res.json({ available: subs, downloaded: false, message: 'No non-English subtitles found.' });
-    }
-    // Download non-English subtitle
-    const subLang = nonEnglish.lang;
-    const outputDir = path.join(__dirname, '../subtitles');
-    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
-    const downloadCmd = `yt-dlp --write-subs --sub-langs ${subLang} --skip-download --output "${outputDir}/%(id)s.%(ext)s" "${url}"`;
-      console.log('[DEBUG] yt-dlp downloadCmd:', downloadCmd);
-    exec(downloadCmd, (err2, stdout2, stderr2) => {
-      if (err2) return res.status(500).json({ error: 'yt-dlp subtitle download failed', details: stderr2 });
-      // Find the subtitle file
-      fs.readdir(outputDir, (err3, files) => {
-        if (err3) {
-          console.error('[DEBUG] Failed to read subtitles directory:', outputDir, err3);
-          return res.status(500).json({ error: 'Failed to read subtitles', debug: { outputDir, err3 } });
-        }
-        console.log('[DEBUG] Files in subtitle outputDir:', files);
-        const subFile = files.find(f => f.startsWith(id + '.') && f.endsWith('.vtt'));
-        if (!subFile) {
-          console.error('[DEBUG] Subtitle not found after download:', { id, files, outputDir, downloadCmd });
-          return res.status(404).json({ error: 'Subtitle not found after download', debug: { id, files, outputDir, downloadCmd } });
-        }
-        // Read subtitle file content
-        const subPath = path.join(outputDir, subFile);
-        let transcription = '';
-        try {
-          transcription = fs.readFileSync(subPath, 'utf8');
-        } catch (e) {
-          console.error('[DEBUG] Failed to read subtitle file:', subPath, e);
-          return res.status(500).json({ error: 'Failed to read subtitle file', debug: { subPath, e } });
-        }
-        // Save to Supabase videos.transcription
-        supabase
-          .from('videos')
-          .update({ transcription })
-          .eq('id', id)
-          .then(({ error: dbError }) => {
-            if (dbError) {
-              console.error('[DEBUG] Failed to save transcription to Supabase:', dbError);
-              return res.status(500).json({ error: 'Failed to save transcription to Supabase', details: dbError });
-            }
-            res.json({ available: subs, downloaded: true, subtitleUrl: `/subtitles/${subFile}`, filename: subFile, command: downloadCmd, savedToSupabase: true });
-          })
-          .catch(e => {
-            console.error('[DEBUG] Supabase update error:', e);
-            return res.status(500).json({ error: 'Supabase update error', details: e });
-          });
-      });
-    });
-  });
-});
+  }
 
-app.use('/subtitles', express.static(path.join(__dirname, '../subtitles')));
+  // Find non-English subtitle (anything not eng-US)
+  const nonEnglish = subs.find(s => s.lang && !s.lang.startsWith('eng'));
+  if (!nonEnglish) {
+    return res.json({ available: subs, downloaded: false, message: 'No non-English subtitles found.' });
+  }
 
-app.post('/api/fetch-thumbnail', async (req, res) => {
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ error: 'Missing url' });
-
-  // Use a unique filename based on video ID or timestamp
-  const outputDir = path.join(__dirname, '../thumbnails');
+  // Download non-English subtitle
+  const subLang = nonEnglish.lang;
+  const outputDir = path.join(__dirname, '../subtitles');
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
-  // Extract video ID
-  function getVideoId(url) {
-    const match = url.match(/video\/(\d+)/);
-    return match ? match[1] : '';
-  }
-  const videoId = getVideoId(url);
-
-  // yt-dlp will save thumbnail as [video-id].[ext]
-  const ytDlpCmd = `yt-dlp --skip-download --write-thumbnail --output "${outputDir}/%(id)s.%(ext)s" "${url}"`;
-    console.log('[DEBUG] yt-dlp thumbnailCmd:', ytDlpCmd);
-  exec(ytDlpCmd, (err, stdout, stderr) => {
-    if (err) return res.status(500).json({ error: 'yt-dlp failed', details: stderr });
-
-    // Find the thumbnail file in outputDir matching videoId
-    fs.readdir(outputDir, (err, files) => {
-      if (err) return res.status(500).json({ error: 'Failed to read thumbnails' });
-      const thumb = files.find(f => f.startsWith(videoId + '.'));
-      if (!thumb) return res.status(404).json({ error: 'Thumbnail not found' });
-      //console.log('Sending thumbnail:', thumb);
-      // Serve the thumbnail URL (you may want to move it to public hosting)
-      res.json({ thumbnailUrl: `/thumbnails/${thumb}`, filename: thumb, command: ytDlpCmd });
+  const downloadCmd = `yt-dlp --write-subs --sub-langs ${subLang} --skip-download --output "${outputDir}/%(id)s.%(ext)s" "${url}"`;
+  console.log('[DEBUG] yt-dlp downloadCmd:', downloadCmd);
+  exec(downloadCmd, (err2, stdout2, stderr2) => {
+    if (err2) return res.status(500).json({ error: 'yt-dlp subtitle download failed', details: stderr2 });
+    // Find the subtitle file
+    // Extract video ID from URL for filename matching
+    const videoIdMatch = url.match(/video\/(\d+)/);
+    const videoId = videoIdMatch ? videoIdMatch[1] : '';
+    fs.readdir(outputDir, (err3, files) => {
+      if (err3) {
+        console.error('[DEBUG] Failed to read subtitles directory:', outputDir, err3);
+        return res.status(500).json({ error: 'Failed to read subtitles', debug: { outputDir, err3 } });
+      }
+      console.log('[DEBUG] Files in subtitle outputDir:', files);
+      const subFile = files.find(f => f.startsWith(videoId + '.') && f.endsWith('.vtt'));
+      if (!subFile) {
+        console.error('[DEBUG] Subtitle not found after download:', { videoId, files, outputDir, downloadCmd });
+        return res.status(404).json({ error: 'Subtitle not found after download', debug: { videoId, files, outputDir, downloadCmd } });
+      }
+      // Read subtitle file content
+      const subPath = path.join(outputDir, subFile);
+      let transcription = '';
+      try {
+        transcription = fs.readFileSync(subPath, 'utf8');
+      } catch (e) {
+        console.error('[DEBUG] Failed to read subtitle file:', subPath, e);
+        return res.status(500).json({ error: 'Failed to read subtitle file', debug: { subPath, e } });
+      }
+      // Save to Supabase videos.transcription by id
+      supabase
+        .from('videos')
+        .update({ transcription })
+        .eq('id', id)
+        .then(({ error: dbError }) => {
+          if (dbError) {
+            console.error('[DEBUG] Failed to save transcription to Supabase:', dbError);
+            return res.status(500).json({ error: 'Failed to save transcription to Supabase', details: dbError });
+          }
+          res.json({ available: subs, downloaded: true, subtitleUrl: `/subtitles/${subFile}`, filename: subFile, command: downloadCmd, savedToSupabase: true });
+        })
+        .catch(e => {
+          console.error('[DEBUG] Supabase update error:', e);
+          return res.status(500).json({ error: 'Supabase update error', details: e });
+        });
     });
   });
 });
 
 app.use('/thumbnails', express.static(path.join(__dirname, '../thumbnails')));
-
 app.listen(3001, () => console.log('API running on port 3001'));
