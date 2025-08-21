@@ -99,6 +99,13 @@ app.post('/api/download-subs', async (req, res) => {
         }
         // Save to Supabase videos.transcription
         supabase
+        // Log the Supabase update query parameters
+        console.log('[DEBUG] Supabase update query:', {
+          table: 'videos',
+          update: { transcription },
+          where: { id }
+        });
+        supabase
           .from('videos')
           .update({ transcription })
           .eq('id', id)
