@@ -16,9 +16,24 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // API to list and download non-English subtitles from TikTok video
 app.post('/api/download-subs', async (req, res) => {
-  const { id } = req.body;
-  if (!id) return res.status(400).json({ error: 'Missing video id' });
-  const url = `https://www.tiktok.com/@_/video/${id}`;
+  const { slug } = req.body;
+  if (!slug) return res.status(400).json({ error: 'Missing video slug' });
+  // Fetch video from Supabase by slug
+  let url = null, id = null;
+  try {
+    const { data, error } = await supabase
+      .from('videos')
+      .select('id, tiktok_url')
+      .eq('video_slug', slug)
+      .single();
+    if (error || !data) {
+      return res.status(404).json({ error: 'Video not found for slug', details: error });
+    }
+    url = data.tiktok_url;
+    id = data.id;
+  } catch (e) {
+    return res.status(500).json({ error: 'Supabase error', details: e });
+  }
 
   // List available subtitles
   const listCmd = `yt-dlp --skip-download --list-subs "${url}"`;
