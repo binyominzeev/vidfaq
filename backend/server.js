@@ -97,12 +97,9 @@ app.post('/api/download-subs', async (req, res) => {
           console.error('[DEBUG] Failed to read subtitle file:', subPath, e);
           return res.status(500).json({ error: 'Failed to read subtitle file', debug: { subPath, e } });
         }
-        // Save to Supabase videos.transcription
-        supabase
         // Log the Supabase update query parameters
         console.log('[DEBUG] Supabase update query:', {
           table: 'videos',
-          update: { transcription },
           where: { id }
         });
         supabase
