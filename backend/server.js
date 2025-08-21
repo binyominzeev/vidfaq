@@ -79,7 +79,11 @@ app.post('/api/download-subs', async (req, res) => {
           return res.status(500).json({ error: 'Failed to read subtitles', debug: { outputDir, err3 } });
         }
         console.log('[DEBUG] Files in subtitle outputDir:', files);
-        const subFile = files.find(f => f.startsWith(id + '.') && f.endsWith('.vtt'));
+        // Use TikTok video ID for file matching
+        // Extract TikTok video ID from the URL
+        const tiktokIdMatch = url.match(/video\/(\d+)/);
+        const tiktokId = tiktokIdMatch ? tiktokIdMatch[1] : null;
+        const subFile = files.find(f => tiktokId && f.startsWith(tiktokId + '.') && f.endsWith('.vtt'));
         if (!subFile) {
           console.error('[DEBUG] Subtitle not found after download:', { id, files, outputDir, downloadCmd });
           return res.status(404).json({ error: 'Subtitle not found after download', debug: { id, files, outputDir, downloadCmd } });
