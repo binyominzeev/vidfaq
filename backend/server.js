@@ -92,7 +92,7 @@ app.post('/api/download-subs', async (req, res) => {
         const subPath = path.join(outputDir, subFile);
         let transcription = '';
         try {
-          transcription = fs.readFileSync(subPath, 'utf8');
+          transcription = fs.readFileSync(subPath, 'utf8').slice(0, 200); // Only first 200 chars for debugging
         } catch (e) {
           console.error('[DEBUG] Failed to read subtitle file:', subPath, e);
           return res.status(500).json({ error: 'Failed to read subtitle file', debug: { subPath, e } });
@@ -102,6 +102,8 @@ app.post('/api/download-subs', async (req, res) => {
           table: 'videos',
           where: { id }
         });
+        // Verbose: show the exact SQL query for manual Supabase testing
+        console.log(`[DEBUG] SQL for Supabase GUI: update videos set transcription = '${transcription.replace(/'/g, "''")}' where id = ${id};`);
         supabase
           .from('videos')
           .update({ transcription })
